@@ -1,130 +1,5 @@
-#%%
 import numpy as np
-import matplotlib.pyplot as plt
-
-
-def GaborFilter(pos, sigma_x, sigma_y, sf, phase, theta, res, xlim, ylim):
-    """
-    Gabor function centered in pos=(pos_x, pos_y)
-    pos (list): list containing x and y coordinate of the center of the filter 
-    sigma_x (float): std of the gaussian envelop in the direction orthogonal to the grating
-    sigma_y (float): std of the gaussian envelop in the direction parallel to the grating
-    f (float): spatial frequency
-    theta (float): orientation
-    phi (float): angle
-    xlim, ylim (lists): lists containing inferior and superior border of the filter in x and y axis
-    res (list): list of dimension 2 containing resolution in x and y direction
-
-    return: 2d matrix corresponding to the Gabor filter
-    """
-    pos_x, pos_y = pos
-    x = np.linspace(xlim[0], xlim[1], res[0])
-    y = np.linspace(ylim[0], ylim[1], res[1])
-    X, Y = np.meshgrid(x, y)
-    X_rot = X * np.cos(theta) + Y * np.sin(theta)
-    Y_rot = -X * np.sin(theta) + Y * np.cos(theta)
-    A = np.exp(
-        -0.5
-        * (
-            ((X_rot + pos_x) ** 2 / sigma_x ** 2)
-            + ((Y_rot + pos_y) ** 2 / sigma_y ** 2)
-        )
-    )
-    B = np.cos(2 * np.pi * (X_rot + pos_x) * sf + phase)
-    return A * B
-
-
-class V1cell:
-    """
-    Parent class for V1 simple and complex cells 
-    """
-
-    def __init__(self, res, xlim, ylim, pos, theta, sf, phase, sigma_x=1, sigma_y=1):
-        self.res = res
-        self.xlim = xlim
-        self.ylim = ylim
-        self.pos = pos
-        self.theta = theta
-        self.sf = sf
-        self.phase = phase
-        self.sigma_x = sigma_x
-        self.sigma_y = sigma_y
-
-
-class simple_cell(V1cell):
-    def __init__(self, res, xlim, ylim, pos, theta, sf, phase, sigma_x, sigma_y):
-        super().__init__(
-            res=res,
-            xlim=xlim,
-            ylim=ylim,
-            pos=pos,
-            theta=theta,
-            sf=sf,
-            phase=phase,
-            sigma_x=sigma_x,
-            sigma_y=sigma_y,
-        )
-        self.type = "simple"
-        self.filter = GaborFilter(
-            pos=self.pos,
-            sf=self.sf,
-            phase=self.phase,
-            theta=self.theta,
-            sigma_x=self.sigma_x,
-            sigma_y=self.sigma_y,
-            res=self.res,
-            xlim=self.xlim,
-            ylim=self.ylim,
-        )
-
-    def get_response(self, stim):
-        x = np.multiply(self.filter, stim).sum()
-        resp = x * (x > 0)
-        return resp
-
-
-class complex_cell(V1cell):
-    def __init__(self, res, xlim, ylim, pos, theta, sf, phase, sigma_x, sigma_y):
-        super().__init__(
-            res=res,
-            xlim=xlim,
-            ylim=ylim,
-            pos=pos,
-            theta=theta,
-            sf=sf,
-            phase=phase,
-            sigma_x=sigma_x,
-            sigma_y=sigma_y,
-        )
-        self.type = "complex"
-        self.f1 = GaborFilter(
-            pos=self.pos,
-            sf=self.sf,
-            phase=self.phase,
-            theta=self.theta,
-            sigma_x=self.sigma_x,
-            sigma_y=self.sigma_y,
-            res=self.res,
-            xlim=self.xlim,
-            ylim=self.ylim,
-        )
-        self.f2 = GaborFilter(
-            pos=self.pos,
-            sf=self.sf,
-            phase=self.phase + 2 * np.pi,
-            theta=self.theta,
-            sigma_x=self.sigma_x,
-            sigma_y=self.sigma_y,
-            res=self.res,
-            xlim=self.xlim,
-            ylim=self.ylim,
-        )
-
-    def get_response(self, stim):
-        x1 = np.multiply(self.f1, stim).sum()
-        x2 = np.multiply(self.f2, stim).sum()
-        resp = np.sqrt(x1 ** 2 + x2 ** 2)
-        return resp
+from V1cells import *
 
 
 class V1model:
@@ -191,18 +66,14 @@ class V1model:
             * self.inputs_fov[1]
         )
         positions = [(x, y) for x in pos_x for y in pos_y]
-        print(positions)
-        print(len(positions))
         return positions
 
     def _get_orientations(self):
         orientations = np.linspace(0, np.pi, self.n_ori + 1)[:-1]
-        print(orientations)
         return orientations
 
     def _get_phases(self):
         phases = np.linspace(0, 2 * np.pi, self.n_phase + 1)[:-1]
-        print(phases)
         return phases
 
     def create_simple_cells(self):
@@ -288,5 +159,3 @@ class V1model:
         complex_cells_f2s = np.array([cell.f2 for cell in self.complex_cells])
         return complex_cells_f1s, complex_cells_f2s
 
-
-# %%
