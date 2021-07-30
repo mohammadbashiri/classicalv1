@@ -1,4 +1,3 @@
-#%%
 import numpy as np
 from GaborFilters import GaborFilter
 
@@ -67,8 +66,8 @@ class simple_cell(V1cell):
 
 class complex_cell(V1cell):
     def __init__(self, res, xlim, ylim, pos, theta, sf, phase, sigma_x, sigma_y):
-        # TODO MODIFY COMPLEX CELL TO IMPROVE INVARIANCE
-        """V1 complex cell
+
+        """V1 complex cell based on the energy model
 
         Args:
             res (list): list containing the dimensions of filter and stimuli in x and y directions
@@ -108,7 +107,7 @@ class complex_cell(V1cell):
         self.f2 = GaborFilter(
             pos=self.pos,
             sf=self.sf,
-            phase=self.phase + np.pi,
+            phase=self.phase + np.pi / 2,
             theta=self.theta,
             sigma_x=self.sigma_x,
             sigma_y=self.sigma_y,
