@@ -7,7 +7,7 @@ class V1cell:
     Parent class for V1 simple and complex cells 
     """
 
-    def __init__(self, res, xlim, ylim, pos, theta, sf, phase, sigma_x=1, sigma_y=1):
+    def __init__(self, res, xlim, ylim, pos, theta, sf, phase, sigma_x, sigma_y):
         self.res = res
         self.xlim = xlim
         self.ylim = ylim
@@ -65,7 +65,7 @@ class simple_cell(V1cell):
 
 
 class complex_cell(V1cell):
-    def __init__(self, res, xlim, ylim, pos, theta, sf, phase, sigma_x, sigma_y):
+    def __init__(self, res, xlim, ylim, pos, theta, sf, sigma_x, sigma_y):
 
         """V1 complex cell based on the energy model
 
@@ -76,7 +76,6 @@ class complex_cell(V1cell):
             pos (list): list containing x and y position of the center of the cell's Gabor filter
             theta (float): orientation of the cell's Gabor filter
             sf (float): spatial frequency of the cell's Gabor filter
-            phase (float): phase of the cell's Gabor filter
             sigma_x (float): std of the Gaussian envelope of the cell's Gabor filter in the orthogonal diretion
             sigma_y (float): std of the Gaussian envelope of the cell's Gabor filter in the parallel diretion
         """
@@ -87,7 +86,7 @@ class complex_cell(V1cell):
             pos=pos,
             theta=theta,
             sf=sf,
-            phase=phase,
+            phase=None,
             sigma_x=sigma_x,
             sigma_y=sigma_y,
         )
@@ -96,7 +95,7 @@ class complex_cell(V1cell):
         self.f1 = GaborFilter(
             pos=self.pos,
             sf=self.sf,
-            phase=self.phase,
+            phase=0,
             theta=self.theta,
             sigma_x=self.sigma_x,
             sigma_y=self.sigma_y,
@@ -107,7 +106,7 @@ class complex_cell(V1cell):
         self.f2 = GaborFilter(
             pos=self.pos,
             sf=self.sf,
-            phase=self.phase + np.pi / 2,
+            phase=np.pi / 2,
             theta=self.theta,
             sigma_x=self.sigma_x,
             sigma_y=self.sigma_y,

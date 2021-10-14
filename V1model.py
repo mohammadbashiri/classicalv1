@@ -1,6 +1,8 @@
 import numpy as np
 from V1cells import *
 
+# TODO modidy complex cells
+
 
 class V1model:
     """
@@ -18,6 +20,7 @@ class V1model:
         sigma_x_values=[1],
         sigma_y_values=[1],
         with_complex_cells=True,
+        noisy_responses=False,
     ):
         """init function of a classical V1 model
 
@@ -41,6 +44,8 @@ class V1model:
         self.cell_density = cell_density
         self.n_ori = n_ori
         self.sf = sf
+        if type(self.sf) != list:
+            self.sf = [self.sf]
         self.n_phase = n_phase
         self.sigma_x_values = sigma_x_values
         self.sigma_y_values = sigma_y_values
@@ -54,6 +59,7 @@ class V1model:
         else:
             self.complex_cells = []
         self.cells = self.simple_cells + self.complex_cells
+        self.noisy_responses = noisy_responses
 
     # TODO can improve this
     def _get_positions(self):
@@ -110,20 +116,11 @@ class V1model:
         """
         return [
             complex_cell(
-                self.inputs_res,
-                self.xlim,
-                self.ylim,
-                pos,
-                theta,
-                sf,
-                phase,
-                sigma_x,
-                sigma_y,
+                self.inputs_res, self.xlim, self.ylim, pos, theta, sf, sigma_x, sigma_y,
             )
             for pos in self.positions
             for theta in self.orientations
             for sf in self.sf
-            for phase in self.phases
             for sigma_x in self.sigma_x_values
             for sigma_y in self.sigma_y_values
         ]
@@ -137,7 +134,10 @@ class V1model:
         Returns:
             [list of floats]: list containing cell's responses
         """
-        return [cell.get_response(stim) for cell in self.cells]
+        resp = [cell.get_response(stim) for cell in self.cells]
+        if self.noisy_responses:
+            resp = [np.random.poisson(r) for r in resp]
+        return resp
 
     def get_simple_cell_filters(self):
         """function to get all the filters of simple cells as a 3d numpy array 
