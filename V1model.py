@@ -1,8 +1,6 @@
 import numpy as np
 from V1cells import *
 
-# TODO modidy complex cells
-
 
 class V1model:
     """
@@ -61,16 +59,17 @@ class V1model:
         self.cells = self.simple_cells + self.complex_cells
         self.noisy_responses = noisy_responses
 
-    # TODO can improve this
     def _get_positions(self):
         pos_x = (
             np.linspace(-0.5, 0.5, int(self.cell_density * self.inputs_fov[0]))
             * self.inputs_fov[0]
         )
         pos_y = (
-            np.linspace(-0.5, 0.5, int(self.cell_density * self.inputs_fov[0]))
+            np.linspace(-0.5, 0.5, int(self.cell_density * self.inputs_fov[1]))
             * self.inputs_fov[1]
         )
+        pos_x = 1 / (self.cell_density) + pos_x[:-1]
+        pos_y = 1 / (self.cell_density) + pos_y[:-1]
         positions = [(x, y) for x in pos_x for y in pos_y]
         return positions
 
