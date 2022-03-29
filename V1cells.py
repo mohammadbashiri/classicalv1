@@ -1,5 +1,5 @@
 import numpy as np
-from GaborFilters import GaborFilter
+from classicalv1.GaborFilters import GaborFilter
 
 
 class V1cell:

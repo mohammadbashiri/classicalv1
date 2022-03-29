@@ -1,6 +1,6 @@
 #%%
 import numpy as np
-from V1cells import *
+from classicalv1.V1cells import *
 
 
 class V1model:

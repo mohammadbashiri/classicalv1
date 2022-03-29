@@ -1,5 +1,7 @@
 from math import gamma
-from V1model import V1model, V1model_random
+
+import pytorch_lightning as pl
+from classicalv1.V1model import V1model, V1model_random
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -19,6 +21,7 @@ class classicalV1(nn.Module):
         with_simple_cells=True,
         with_complex_cells=True,
         noisy_responses=False,
+        subset_of_cells_dict=None,
     ):
         super().__init__()
         self.model = V1model(
@@ -51,12 +54,39 @@ class classicalV1(nn.Module):
                 }
             )
         self.params = nn.ParameterDict(params)
+        if subset_of_cells_dict != None:
+            self.keep_subset_of_cells(**subset_of_cells_dict)
         self.eval()
+
+    def keep_subset_of_cells(self, simple_cells_idx=None, complex_cells_idx=None):
+        if simple_cells_idx != None:
+            self.model.simple_cells = [
+                self.model.simple_cells[i] for i in simple_cells_idx
+            ]
+        if complex_cells_idx != None:
+            self.model.complex_cells = [
+                self.model.complex_cells[i] for i in complex_cells_idx
+            ]
+        if self.model.with_simple_cells == True:
+            self.simple_cell_filters = nn.Parameter(
+                torch.Tensor(self.model.get_simple_cell_filters()), requires_grad=False
+            )
+            self.params.update({"simple_cells": self.simple_cell_filters})
+        if self.model.with_complex_cells == True:
+            (f1, f2) = self.model.get_complex_cell_filters()
+            self.complex_cell_f1s = nn.Parameter(torch.Tensor(f1), requires_grad=False)
+            self.complex_cell_f2s = nn.Parameter(torch.Tensor(f2), requires_grad=False)
+            self.params.update(
+                {
+                    "complex_cells_f1": self.complex_cell_f1s,
+                    "complex_cells_f2": self.complex_cell_f2s,
+                }
+            )
 
     def simple_cells_forward(self, x):
         x = torch.tensordot(x, self.simple_cell_filters, dims=[[1, 2], [1, 2]])
         x = F.relu(x)
-        return x
+        return
 
     def complex_cells_forward(self, x):
         x1 = torch.tensordot(x, self.complex_cell_f1s, dims=[[1, 2], [1, 2]])
@@ -65,6 +95,9 @@ class classicalV1(nn.Module):
         return xc
 
     def forward(self, x):
+        if len(x.shape) == 4:
+            x = x.squeeze(1)
+        assert len(x.shape) == 3
         resp = []
         if self.model.with_simple_cells == True:
             resp.append(self.simple_cells_forward(x))
