@@ -1,6 +1,3 @@
-from math import gamma
-
-import pytorch_lightning as pl
 from classicalv1.V1model import V1model, V1model_random
 import torch
 import torch.nn as nn
