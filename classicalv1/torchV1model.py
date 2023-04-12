@@ -82,7 +82,7 @@ class classicalV1(nn.Module):
 
     def simple_cells_forward(self, x):
         x = torch.tensordot(x, self.simple_cell_filters, dims=[[1, 2], [1, 2]])
-        x = F.relu(x)
+        x = F.elu(x) + 1
         return x
 
     def complex_cells_forward(self, x):

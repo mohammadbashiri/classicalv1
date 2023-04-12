@@ -21,6 +21,13 @@ def GaborFilter(pos, sigma_x, sigma_y, sf, phase, theta, res, xlim, ylim):
     X, Y = np.meshgrid(x, y)
     X_rot = X * np.cos(theta) + Y * np.sin(theta)
     Y_rot = -X * np.sin(theta) + Y * np.cos(theta)
+
+    pos = np.array(pos)
+    rotation_matrix = np.array(
+        [[np.cos(theta), np.sin(theta)], [-np.sin(theta), np.cos(theta)]]
+    )
+    pos_x, pos_y = np.matmul(rotation_matrix, pos)
+    
     A = np.exp(
         -0.5
         * (
